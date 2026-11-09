@@ -104,38 +104,30 @@
 </div>
 
 <script type="text/javascript">
-    window.addEventListener('load', function() {
-        const patcherSettings = {
-            language: 'en',
-            requireValidation: true,
-            allowDropFiles: true
-        };
+    // 1. Construct the URL securely to avoid string dropping issues
+    const pPrefix = "https://corsproxy.io";
+    const rServer = "https://githubusercontent.com";
+    const tPath = "mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta";
+    const absolutePatchUrl = pPrefix + encodeURIComponent(rServer + tPath);
 
-        // Building your path segment by segment to force it past the system bug
-        const proxyPrefix = "https://corsproxy.io";
-        const rawServer = "https://githubusercontent.com";
-        const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
-        const targetAsset = "main/pride.xdelta";
+    // 2. Set up the exact config structure RomPatcher's core framework scans for automatically
+    var RomPatcherWebWidgetConfig = {
+        allowDynamicPatches: false, 
+        hidePatchInput: true,
+        patches: [{
+            code: "pnd",
+            codeName: "PRIDE Never Die",
+            category: "hack",
+            creator: "rey",
+            creatorName: "rey",
+            outputName: "PRIDE Never Die.z64",
+            file: absolutePatchUrl,
+            inputRom: "Virtual Pro Wrestling 2 - Oudou Keishou (Japan)",
+            inputCrc32: "0xF620835D"
+        }]
+    };
 
-        const completeUrl = proxyPrefix + encodeURIComponent(rawServer + targetRepo + targetAsset);
-
-        const patchDetails = {
-            file: completeUrl,
-            name: "PRIDE Never Die",
-            inputCrc32: 0xF620835D, 
-            outputName: "PRIDE Never Die.z64"
-        };
-
-        if (typeof RomPatcherWeb !== 'undefined') {
-            RomPatcherWeb.initialize(patcherSettings, patchDetails);
-            document.getElementById('status-text').textContent = "Patcher ready. Choose your base ROM.";
-            document.getElementById('status-text').style.color = "#00ffcc";
-        } else {
-            document.getElementById('status-text').textContent = "Error: Patcher components could not be loaded.";
-            document.getElementById('status-text').style.color = "#ff3b30";
-        }
-    });
-
+    // 3. Simple UI Status management
     const fileInput = document.getElementById('input-file-rom');
     const statusText = document.getElementById('status-text');
 
