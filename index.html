@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRIDE Never Die - Online Patcher</title>
     
-    <!-- Required RomPatcher.js Core Layout Stylesheets and Javascript Engines -->
+    <!-- Required RomPatcher.js Core Web Component Engines -->
     <link type="text/css" rel="stylesheet" href="./rom-patcher-js/style.css" media="all" />
     <script type="text/javascript" src="./rom-patcher-js/RomPatcher.webapp.js"></script>
     <style>
@@ -54,38 +54,6 @@
             margin: 5px 0 0 0;
             padding-left: 20px;
         }
-        #status-text {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #ffcc00;
-            font-weight: 500;
-        }
-        /* Style the automatically generated form elements nicely */
-        #marcrobledo-rom-patcher {
-            margin: 20px 0;
-        }
-        #marcrobledo-rom-patcher input[type="file"] {
-            background: #2a2a2a;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px dashed #555;
-            color: #fff;
-            cursor: pointer;
-            width: 85%;
-        }
-        #marcrobledo-rom-patcher button {
-            background-color: #007aff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        #marcrobledo-rom-patcher button:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
@@ -103,35 +71,38 @@
         </ul>
     </div>
 
-    <!-- THE OFFICIAL TARGET CONTAINER REQUIRED BY THE REPO CODES -->
-    <div id="marcrobledo-rom-patcher"></div>
-
-    <div id="status-text">Patcher ready. Choose your base ROM.</div>
+    <!-- NATIVE CHOSEN INJECTION LOCATION REQUIRED BY LIBRARY CONSTRUCTORS -->
+    <div id="rom-patcher-container"></div>
 </div>
 
 <script type="text/javascript">
-    // 1. Construct the URL securely to avoid string truncation
-    const pPrefix = "https://corsproxy.io";
-    const rServer = "https://githubusercontent.com";
-    const tPath = "mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta";
-    const absolutePatchUrl = pPrefix + encodeURIComponent(rServer + tPath);
+    window.addEventListener('load', function() {
+        const myPatcherSettings = {
+            language: 'en',
+            requireValidation: true,
+            allowDropFiles: true
+        };
 
-    // 2. The exact global settings configuration that RomPatcher scans for out-of-the-box
-    var RomPatcherWebWidgetConfig = {
-        allowDynamicPatches: false, 
-        hidePatchInput: true,
-        patches: [{
-            code: "pnd",
-            codeName: "PRIDE Never Die",
-            category: "hack",
-            creator: "rey",
-            creatorName: "rey",
-            outputName: "PRIDE Never Die.z64",
+        // Construct the URL step by step cleanly to bypass character truncation bugs
+        const proxyPrefix = "https://corsproxy.io";
+        const rawServer = "https://raw.githubusercontent.com/";
+        const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
+        const targetAsset = "main/pride.xdelta";
+        
+        const absolutePatchUrl = proxyPrefix + encodeURIComponent(rawServer + targetRepo + targetAsset);
+
+        const patchDetails = {
             file: absolutePatchUrl,
-            inputRom: "Virtual Pro Wrestling 2 - Oudou Keishou (Japan)",
-            inputCrc32: "F620835D"
-        }]
-    };
+            name: "PRIDE Never Die",
+            inputCrc32: "F620835D", // Verifies target Virtual Pro Wrestling 2 ROM
+            outputName: "PRIDE Never Die.z64" // Auto-formats the file name upon download
+        };
+
+        // Trigger native application initialization into the UI container wrapper
+        if (typeof RomPatcherWeb !== 'undefined') {
+            RomPatcherWeb.initialize(myPatcherSettings, patchDetails);
+        }
+    });
 </script>
 
 </body>
