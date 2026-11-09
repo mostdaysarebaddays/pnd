@@ -120,7 +120,9 @@
     'use strict';
     (function () {
       const PATCH_URL = 'https://raw.githubusercontent.com/mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta';
-      const EXPECTED_CRC32 = 0xF620835D;
+      // RomPatcher.js treats numeric CRCs >= 0x80000000 as signed in its embedded-patch parser.
+      // A hex string is parsed as an unsigned 32-bit CRC32, matching hashCRC32().
+      const EXPECTED_CRC32 = 'F620835D';
       const status = document.getElementById('app-status');
       let patchObjectUrl = null;
       function show(message, kind) {
