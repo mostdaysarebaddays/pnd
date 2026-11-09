@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRIDE Never Die - Online Patcher</title>
     
-    <!-- Points directly to your operational webapp assets folder -->
+    <!-- Link to the native stylesheet and core UI engine script files -->
     <link rel="stylesheet" href="webapp/rompatcher.css" type="text/css">
-    <script type="text/javascript" src="webapp/rompatcher.webworker.js"></script>
+    <script type="text/javascript" src="webapp/rompatcher.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -93,24 +93,25 @@
     </div>
 
     <div class="file-input-wrapper">
-        <!-- Main upload field for the user's N64 file -->
+        <!-- Native target elements bound by RomPatcher.js web widget structures -->
         <input type="file" id="input-file-rom" accept=".z64,.v64,.n64,.zip" />
     </div>
 
-    <!-- Hidden native elements structured for RomPatcher's automatic bindings -->
+    <!-- Hidden file input element that receives your hardcoded xdelta binary payload -->
     <input type="file" id="input-file-patch" style="display:none;" />
 
     <div id="status-text">Patcher ready. Choose your base ROM.</div>
 </div>
 
 <script type="text/javascript">
-    // 1. Construct the URL securely to avoid text-dropping engine issues
-    const pPrefix = "https://corsproxy.io";
-    const rServer = "https://githubusercontent.com";
-    const tPath = "mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta";
-    const absolutePatchUrl = pPrefix + encodeURIComponent(rServer + tPath);
+    // Construct the URL step by step safely to bypass internal character limits
+    const proxyPrefix = "https://corsproxy.io";
+    const rawServer = "https://githubusercontent.com";
+    const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
+    const targetAsset = "main/pride.xdelta";
+    const absolutePatchUrl = proxyPrefix + encodeURIComponent(rawServer + targetRepo + targetAsset);
 
-    // 2. Set up the exact config structure your version of RomPatcher.js listens for natively
+    // Global layout configuration scanned natively by RomPatcher's initialization loop
     var RomPatcherWebWidgetConfig = {
         allowDynamicPatches: false, 
         hidePatchInput: true,
@@ -123,11 +124,11 @@
             outputName: "PRIDE Never Die.z64",
             file: absolutePatchUrl,
             inputRom: "Virtual Pro Wrestling 2 - Oudou Keishou (Japan)",
-            inputCrc32: "0xF620835D"
+            inputCrc32: "F620835D"
         }]
     };
 
-    // 3. Simple UI Status updates
+    // Simple status text adjustments
     const fileInput = document.getElementById('input-file-rom');
     const statusText = document.getElementById('status-text');
 
