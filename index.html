@@ -61,10 +61,10 @@
             font-weight: 500;
         }
         /* Style the automatically generated form elements nicely */
-        #rom-patcher-container {
+        #marcrobledo-rom-patcher {
             margin: 20px 0;
         }
-        #rom-patcher-container input[type="file"] {
+        #marcrobledo-rom-patcher input[type="file"] {
             background: #2a2a2a;
             padding: 10px;
             border-radius: 6px;
@@ -73,7 +73,7 @@
             cursor: pointer;
             width: 85%;
         }
-        #rom-patcher-container button {
+        #marcrobledo-rom-patcher button {
             background-color: #007aff;
             color: white;
             border: none;
@@ -83,7 +83,7 @@
             cursor: pointer;
             margin-top: 15px;
         }
-        #rom-patcher-container button:hover {
+        #marcrobledo-rom-patcher button:hover {
             background-color: #0056b3;
         }
     </style>
@@ -103,43 +103,35 @@
         </ul>
     </div>
 
-    <!-- NATIVE TARGET CONTAINER FOR ROMPATCHER ENGINE UI GENERATION -->
-    <div id="rom-patcher-container"></div>
+    <!-- THE OFFICIAL TARGET CONTAINER REQUIRED BY THE REPO CODES -->
+    <div id="marcrobledo-rom-patcher"></div>
 
     <div id="status-text">Patcher ready. Choose your base ROM.</div>
 </div>
 
 <script type="text/javascript">
-    window.addEventListener('load', function() {
-        const myPatcherSettings = {
-            language: 'en',
-            requireValidation: true,
-            allowDropFiles: true
-        };
+    // 1. Construct the URL securely to avoid string truncation
+    const pPrefix = "https://corsproxy.io";
+    const rServer = "https://githubusercontent.com";
+    const tPath = "mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta";
+    const absolutePatchUrl = pPrefix + encodeURIComponent(rServer + tPath);
 
-        // Construct the URL step by step safely to bypass character drop limits
-        const proxyPrefix = "https://corsproxy.io";
-        const rawServer = "https://githubusercontent.com";
-        const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
-        const targetAsset = "main/pride.xdelta";
-        
-        const absolutePatchUrl = proxyPrefix + encodeURIComponent(rawServer + targetRepo + targetAsset);
-
-        const patchDetails = {
+    // 2. The exact global settings configuration that RomPatcher scans for out-of-the-box
+    var RomPatcherWebWidgetConfig = {
+        allowDynamicPatches: false, 
+        hidePatchInput: true,
+        patches: [{
+            code: "pnd",
+            codeName: "PRIDE Never Die",
+            category: "hack",
+            creator: "rey",
+            creatorName: "rey",
+            outputName: "PRIDE Never Die.z64",
             file: absolutePatchUrl,
-            name: "PRIDE Never Die",
-            inputCrc32: 0xF620835D, // Enforces the clean Virtual Pro Wrestling 2 check
-            outputName: "PRIDE Never Die.z64" // Automatically handles naming conversion upon download
-        };
-
-        if (typeof RomPatcherWeb !== 'undefined') {
-            // Fires the initialization process into the target ID element space
-            RomPatcherWeb.initialize(myPatcherSettings, patchDetails);
-        } else {
-            document.getElementById('status-text').textContent = "Error: Patcher script dependencies missing.";
-            document.getElementById('status-text').style.color = "#ff3b30";
-        }
-    });
+            inputRom: "Virtual Pro Wrestling 2 - Oudou Keishou (Japan)",
+            inputCrc32: "F620835D"
+        }]
+    };
 </script>
 
 </body>
