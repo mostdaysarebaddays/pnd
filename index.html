@@ -104,40 +104,49 @@
 </div>
 
 <script type="text/javascript">
-    // Define the custom patch configuration directly inside RomPatcher.js layout
-    var RomPatcherWebWidgetConfig = {
-        allowDynamicPatches: false, 
-        hidePatchInput: true,
-        patches: [{
-            code: "pnd",
-            codeName: "PRIDE Never Die",
-            category: "hack",
-            creator: "rey",
-            creatorName: "rey",
-            // Forces the download to save with the correct N64 extension format
-            outputName: "PRIDE Never Die.z64",
-            // Uses corsproxy.io to cleanly bypass GitHub cross-origin restrictions on raw files
-            file: "https://github.com/mostdaysarebaddays/PRIDE-Never-Die/blob/main/pride.xdelta",
-            inputRom: "Virtual Pro Wrestling 2 - Oudou Keishou (Japan)",
-            // Enforces strict file CRC verification check before patching
-            inputCrc32: "0xF620835D"
-        }]
-    };
+    window.addEventListener('load', function() {
+        const patcherSettings = {
+            language: 'en',
+            requireValidation: true,
+            allowDropFiles: true
+        };
 
-    // UI Feedback indicators to guide the user
-    document.addEventListener("DOMContentLoaded", () => {
-        const fileInput = document.getElementById('input-file-rom');
-        const statusText = document.getElementById('status-text');
+        // Building your path segment by segment to force it past the system bug
+        const proxyPrefix = "https://corsproxy.io";
+        const rawServer = "https://githubusercontent.com";
+        const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
+        const targetAsset = "main/pride.xdelta";
 
-        if(fileInput) {
-            fileInput.addEventListener('change', () => {
-                if (fileInput.files.length > 0) {
-                    statusText.textContent = "Validating ROM CRC and applying PRIDE Never Die mod...";
-                    statusText.style.color = "#007aff";
-                }
-            });
+        const completeUrl = proxyPrefix + encodeURIComponent(rawServer + targetRepo + targetAsset);
+
+        const patchDetails = {
+            file: completeUrl,
+            name: "PRIDE Never Die",
+            inputCrc32: 0xF620835D, 
+            outputName: "PRIDE Never Die.z64"
+        };
+
+        if (typeof RomPatcherWeb !== 'undefined') {
+            RomPatcherWeb.initialize(patcherSettings, patchDetails);
+            document.getElementById('status-text').textContent = "Patcher ready. Choose your base ROM.";
+            document.getElementById('status-text').style.color = "#00ffcc";
+        } else {
+            document.getElementById('status-text').textContent = "Error: Patcher components could not be loaded.";
+            document.getElementById('status-text').style.color = "#ff3b30";
         }
     });
+
+    const fileInput = document.getElementById('input-file-rom');
+    const statusText = document.getElementById('status-text');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                statusText.textContent = "Validating ROM CRC and applying PRIDE Never Die mod...";
+                statusText.style.color = "#007aff";
+            }
+        });
+    }
 </script>
 
 </body>
