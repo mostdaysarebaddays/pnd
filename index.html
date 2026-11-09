@@ -19,8 +19,6 @@
     main { max-width: 760px; margin: 0 auto; }
     .hero { text-align: center; padding: 20px 5px 8px; }
     .brand-logo { display: block; width: 320px; max-width: 100%; height: auto; margin: 0 auto 24px; }
-    .eyebrow { margin: 0 0 8px; color: #f38c8c; font-size: 12px; letter-spacing: .2em; font-weight: 800; }
-    h1 { margin: 0; font-size: clamp(30px,5vw,48px); line-height: 1.12; letter-spacing: -.04em; }
     .intro { max-width: 580px; margin: 15px auto 24px; color: #abb0bf; }
     .panel { padding: clamp(20px,4vw,34px); background: #1c2028; border: 1px solid #323846; border-radius: 18px; }
     .requirements { margin: 0 0 25px; padding: 18px 20px; background: #252b36; border: 1px solid #363e4d; border-radius: 12px; }
@@ -31,7 +29,38 @@
                   font-size: 14px; color: #c8d5f5; white-space: normal; }
     #app-status[data-kind="ok"] { background: #1b3128; color: #b1edc3; }
     #app-status[data-kind="error"] { background: #42232a; color: #ffc1c6; }
-    #rom-patcher-container { padding: 0; }
+    /* Override the upstream RomPatcher.js white panel and form colors. */
+    #rom-patcher-container {
+      padding: 0;
+      background: transparent;
+      color: #eceef3;
+      max-width: 100%;
+      border: 0;
+    }
+    #rom-patcher-container .text-muted { color: #adb5c5; }
+    #rom-patcher-container input[type=file],
+    #rom-patcher-container select {
+      background-color: #252b36;
+      color: #eceef3;
+      border: 1px solid #475064;
+      border-radius: 9px;
+      padding: 10px 12px;
+    }
+    #rom-patcher-container input[type=file]:hover:not(:disabled),
+    #rom-patcher-container select:hover:not(:disabled) { background-color: #303847; }
+    #rom-patcher-container input[type=file].valid {
+      background-color: #20372e;
+      color: #c7f1d5;
+      border-color: #4d8b68;
+    }
+    #rom-patcher-container input[type=file].invalid {
+      background-color: #44252d;
+      color: #ffbfc8;
+      border-color: #b95a66;
+    }
+    #rom-patcher-container input[type=file]:disabled,
+    #rom-patcher-container select:disabled { color: #b1b8c6; opacity: 1; }
+    #rom-patcher-container #rom-patcher-button-apply { display: none; }
     #rom-patcher-container .rom-patcher-row { margin-bottom: 17px; }
     #rom-patcher-container label { font-weight: 650; }
     #rom-patcher-container input[type=file],
@@ -59,9 +88,7 @@
   <main>
     <header class="hero">
       <img class="brand-logo" src="./lg_pnd.png" alt="PRIDE Never Die logo" width="320" height="170">
-      <p class="eyebrow">N64 FAN MODIFICATION</p>
-      <h1>PRIDE Never Die</h1>
-      <p class="intro">Select your clean Virtual Pro Wrestling 2 ROM, then apply the latest PRIDE Never Die patch. The ROM is processed locally in your browser.</p>
+      <p class="intro">Select your clean Virtual Pro Wrestling 2 ROM. Once its CRC32 is verified, the latest PRIDE Never Die patch is applied and downloaded automatically. Your ROM stays in your browser.</p>
     </header>
 
     <section class="panel" aria-label="ROM patcher">
@@ -107,7 +134,7 @@
           <button type="button" id="rom-patcher-button-apply" disabled>Apply patch &amp; download .z64</button>
         </div>
       </div>
-      <p class="note">Only use a clean, unmodified ROM matching the checksum above. The page downloads the latest patch from GitHub; it does not upload your ROM anywhere.</p>
+      <p class="note">Only clean, unmodified ROMs matching the checksum above are patched. The latest patch is downloaded from GitHub; your ROM is not uploaded anywhere.</p>
     </section>
 
     <footer class="footer">
@@ -125,6 +152,7 @@
       const EXPECTED_CRC32 = 'F620835D';
       const status = document.getElementById('app-status');
       let patchObjectUrl = null;
+      const appliedRoms = new WeakSet(); // Apply automatically only once per ROM selection.
       function show(message, kind) {
         status.textContent = message;
         status.dataset.kind = kind || 'loading';
@@ -164,24 +192,34 @@
             fixChecksum: false,
             outputSuffix: false,
             onloadpatch: function () {
-              show('Patch loaded. Choose your clean .z64 ROM, then click Apply patch & download .z64.', 'ok');
+              show('Patch loaded. Select your clean .z64 ROM; a valid ROM will be patched automatically.', 'ok');
             },
             onvalidaterom: function (romFile, valid) {
-              if (valid) {
-                show('Base ROM checksum matches. Ready to apply PRIDE Never Die.', 'ok');
-              } else {
+              if (!valid) {
                 show('Wrong base ROM or revision. Expected CRC32 F620835D. Patching is disabled.', 'error');
+                return;
               }
+              if (!romFile || appliedRoms.has(romFile)) return;
+              appliedRoms.add(romFile);
+              show('Base ROM checksum confirmed. Applying PRIDE Never Die automatically…', 'ok');
+              // Let the checksum worker finish restoring the ROM buffer and enabling UI.
+              setTimeout(function () {
+                try {
+                  RomPatcherWeb.applyPatch();
+                } catch (error) {
+                  appliedRoms.delete(romFile);
+                  show('Could not apply patch: ' + (error && error.message ? error.message : String(error)), 'error');
+                }
+              }, 0);
             },
             onpatch: function () {
-              show('PRIDE Never Die was applied. Your browser is preparing the patched .z64 download.', 'ok');
+              show('Patch applied successfully! Downloading PRIDE Never Die.z64…', 'ok');
             }
           }, {
             file: patchObjectUrl,
             name: 'PRIDE Never Die (latest)',
-            description: 'PRIDE Never Die — current main-branch pride.xdelta from GitHub',
             inputCrc32: EXPECTED_CRC32,
-            outputName: 'PRIDE_Never_Die',
+            outputName: 'PRIDE Never Die',
             outputExtension: 'z64'
           });
         } catch (error) {
