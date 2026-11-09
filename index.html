@@ -1,162 +1,191 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" translate="no">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIDE Never Die - Online Patcher</title>
-    
-    <!-- Local fallback file styles -->
-    <link type="text/css" rel="stylesheet" href="./rom-patcher-js/style.css" media="all" />
-    <link type="text/css" rel="stylesheet" href="./webapp/rompatcher.css" media="all" />
-    
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .patcher-container {
-            background-color: #1e1e1e;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            text-align: center;
-            max-width: 480px;
-            width: 100%;
-            border: 1px solid #333;
-        }
-        h2 {
-            color: #fff;
-            margin-top: 0;
-            font-size: 1.8rem;
-            letter-spacing: 1px;
-        }
-        .instructions {
-            color: #aaaaaa;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 25px;
-        }
-        .rom-requirements {
-            background-color: #262626;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            text-align: left;
-            margin-bottom: 25px;
-            border-left: 4px solid #ff3b30;
-        }
-        .rom-requirements ul {
-            margin: 5px 0 0 0;
-            padding-left: 20px;
-        }
-        .upload-box {
-            margin: 25px 0;
-        }
-        /* Native, un-hidden file selection buttons */
-        input[type="file"] {
-            background: #2a2a2a;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px dashed #555;
-            color: #fff;
-            cursor: pointer;
-            width: 90%;
-            font-size: 0.9rem;
-        }
-        input[type="file"]:hover {
-            border-color: #007aff;
-        }
-        #status-text {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #ffcc00;
-            font-weight: 500;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>PRIDE Never Die — Online ROM Patcher</title>
+  <meta name="description" content="Apply the PRIDE Never Die xdelta patch to a clean Virtual Pro Wrestling 2 (Japan) ROM in your browser.">
+
+  <!-- Keep the complete rom-patcher-js/ directory from Marc Robledo's RomPatcher.js in this repository.
+       Workers and module imports must be hosted on this same GitHub Pages origin. -->
+  <link rel="stylesheet" href="./rom-patcher-js/style.css">
+  <script defer src="./rom-patcher-js/RomPatcher.webapp.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: 36px 18px; background: #111318;
+           color: #eceef3; font: 16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { max-width: 760px; margin: 0 auto; }
+    .hero { text-align: center; padding: 20px 5px 8px; }
+    .eyebrow { margin: 0 0 8px; color: #f38c8c; font-size: 12px; letter-spacing: .2em; font-weight: 800; }
+    h1 { margin: 0; font-size: clamp(30px,5vw,48px); line-height: 1.12; letter-spacing: -.04em; }
+    .intro { max-width: 580px; margin: 15px auto 24px; color: #abb0bf; }
+    .panel { padding: clamp(20px,4vw,34px); background: #1c2028; border: 1px solid #323846; border-radius: 18px; }
+    .requirements { margin: 0 0 25px; padding: 18px 20px; background: #252b36; border: 1px solid #363e4d; border-radius: 12px; }
+    .requirements h2 { margin: 0 0 8px; font-size: 14px; letter-spacing: .05em; text-transform: uppercase; }
+    .requirements p { margin: 4px 0; color: #c6cad5; font-size: 14px; }
+    code { color: #ffb5b5; font-size: .95em; overflow-wrap: anywhere; }
+    #app-status { margin: 0 0 24px; padding: 12px 16px; background: #252b36; border-radius: 10px;
+                  font-size: 14px; color: #c8d5f5; white-space: normal; }
+    #app-status[data-kind="ok"] { background: #1b3128; color: #b1edc3; }
+    #app-status[data-kind="error"] { background: #42232a; color: #ffc1c6; }
+    #rom-patcher-container { padding: 0; }
+    #rom-patcher-container .rom-patcher-row { margin-bottom: 17px; }
+    #rom-patcher-container label { font-weight: 650; }
+    #rom-patcher-container input[type=file],
+    #rom-patcher-container select { width: 100%; max-width: 100%; }
+    #rom-patcher-container button#rom-patcher-button-apply { border: 0; border-radius: 9px;
+                    padding: 13px 28px; font-size: 16px; font-weight: 750; background: #c83640; color: white; cursor: pointer; }
+    #rom-patcher-container button#rom-patcher-button-apply:disabled { opacity: .45; cursor: not-allowed; }
+    #rom-patcher-container button#rom-patcher-button-apply:not(:disabled):hover { background: #e24952; }
+    #rom-patcher-rom-info { margin: 6px 0 20px; }
+    #rom-patcher-rom-info .rom-patcher-row { margin-bottom: 4px; font-size: 12px; }
+    #rom-patcher-patch-description, #rom-patcher-patch-requirements-value { overflow-wrap: anywhere; }
+    #rom-patcher-row-error-message { color: #ffb5b5; font-weight: 600; margin-bottom: 12px; }
+    .text-center { text-align: center; }
+    .footer { text-align: center; padding: 22px 12px; font-size: 13px; color: #a7abba; }
+    a { color: #ff9da6; }
+    .footer a { margin: 0 7px; }
+    .note { margin: 17px 0 0; color: #a7abba; font-size: 12px; }
+    @media (max-width: 480px) {
+      .rom-patcher-row { display: block; }
+      #rom-patcher-container .text-right { text-align: left; margin-bottom: 6px; }
+    }
+  </style>
 </head>
 <body>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">N64 FAN MODIFICATION</p>
+      <h1>PRIDE Never Die</h1>
+      <p class="intro">Select your clean Virtual Pro Wrestling 2 ROM, then apply the latest PRIDE Never Die patch. The ROM is processed locally in your browser.</p>
+    </header>
 
-<div class="patcher-container">
-    <h2>PRIDE Never Die Patcher</h2>
-    <p class="instructions">Load your clean N64 base ROM below to automatically apply the <strong>PRIDE Never Die</strong> modification.</p>
+    <section class="panel" aria-label="ROM patcher">
+      <div class="requirements">
+        <h2>Required base ROM</h2>
+        <p><strong>Game:</strong> Virtual Pro Wrestling 2 — Oudou Keishou (Japan)</p>
+        <p><strong>File:</strong> <code>.z64</code> or a <code>.zip</code> containing the <code>.z64</code></p>
+        <p><strong>CRC32:</strong> <code>F620835D</code></p>
+      </div>
 
-    <div class="rom-requirements">
-        <strong>Required Base ROM Profile:</strong>
-        <ul>
-            <li>File: <code>Virtual Pro Wrestling 2 - Oudou Keishou (Japan)</code></li>
-            <li>Extension: <code>.z64</code> (or a <code>.zip</code> containing it)</li>
-            <li>Expected CRC32: <code>F620835D</code></li>
-        </ul>
-    </div>
+      <div id="app-status" role="status" aria-live="polite">Checking the PRIDE Never Die patch…</div>
 
-    <!-- NATIVE, EXPLICIT UPLOAD FIELD THAT WILL NEVER VANISH -->
-    <div class="upload-box">
-        <input type="file" id="input-file-rom" accept=".z64,.v64,.n64,.zip" />
-    </div>
+      <!-- These IDs are required by RomPatcherWeb.initialize. Do not rename them. -->
+      <div id="rom-patcher-container">
+        <div class="rom-patcher-row margin-bottom" id="rom-patcher-row-file-rom">
+          <div class="text-right"><label for="rom-patcher-input-file-rom">ROM file:</label></div>
+          <div class="rom-patcher-container-input">
+            <input type="file" id="rom-patcher-input-file-rom" accept=".z64,.zip,application/zip,application/octet-stream" class="empty" disabled>
+          </div>
+        </div>
 
-    <div id="status-text">Patcher ready. Choose your base ROM.</div>
-    
-    <!-- Background containers used natively by alternative engine variations -->
-    <div id="rom-patcher-container" style="display:none;"></div>
-    <div id="marcrobledo-rom-patcher" style="display:none;"></div>
-</div>
+        <div class="margin-bottom text-selectable text-mono text-muted" id="rom-patcher-rom-info">
+          <div class="rom-patcher-row"><div class="text-right">CRC32:</div><div class="text-truncate"><span id="rom-patcher-span-crc32"></span></div></div>
+          <div class="rom-patcher-row"><div class="text-right">MD5:</div><div class="text-truncate"><span id="rom-patcher-span-md5"></span></div></div>
+          <div class="rom-patcher-row"><div class="text-right">SHA-1:</div><div class="text-truncate"><span id="rom-patcher-span-sha1"></span></div></div>
+          <div class="rom-patcher-row" id="rom-patcher-row-info-rom"><div class="text-right">ROM:</div><div class="text-truncate"><span id="rom-patcher-span-rom-info"></span></div></div>
+        </div>
 
-<!-- Load RomPatcher core scripts -->
-<script type="text/javascript" src="./rom-patcher-js/RomPatcher.webapp.js"></script>
-<script type="text/javascript" src="./webapp/rompatcher.js"></script>
+        <div class="rom-patcher-row margin-bottom" id="rom-patcher-row-file-patch">
+          <div class="text-right"><label for="rom-patcher-select-patch">Patch:</label></div>
+          <div class="rom-patcher-container-input"><select id="rom-patcher-select-patch" disabled></select></div>
+        </div>
+        <div class="rom-patcher-row margin-bottom" id="rom-patcher-row-patch-description">
+          <div class="text-right text-mono text-muted">Description:</div>
+          <div class="text-truncate" id="rom-patcher-patch-description"></div>
+        </div>
+        <div class="rom-patcher-row margin-bottom text-selectable text-mono text-muted" id="rom-patcher-row-patch-requirements">
+          <div class="text-right text-mono" id="rom-patcher-patch-requirements-type">Required ROM:</div>
+          <div class="text-truncate" id="rom-patcher-patch-requirements-value"></div>
+        </div>
+        <div class="text-center" id="rom-patcher-row-apply">
+          <div id="rom-patcher-row-error-message" class="margin-bottom"><span id="rom-patcher-error-message"></span></div>
+          <button type="button" id="rom-patcher-button-apply" disabled>Apply patch &amp; download .z64</button>
+        </div>
+      </div>
+      <p class="note">Only use a clean, unmodified ROM matching the checksum above. The page downloads the latest patch from GitHub; it does not upload your ROM anywhere.</p>
+    </section>
 
-<script type="text/javascript">
-    // Construct your file locations step by step cleanly to prevent URL text trimming
-    const customProxy = "https://corsproxy.io";
-    const remoteServer = "https://githubusercontent.com";
-    const targetFile = "mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta";
-    const explicitPatchUrl = customProxy + encodeURIComponent(remoteServer + targetFile);
+    <footer class="footer">
+      <a href="https://github.com/mostdaysarebaddays/PRIDE-Never-Die" target="_blank" rel="noopener noreferrer">PRIDE Never Die repository</a>
+      <a href="https://github.com/marcrobledo/RomPatcher.js" target="_blank" rel="noopener noreferrer">Powered by RomPatcher.js</a>
+    </footer>
+  </main>
 
-    const patchDetails = {
-        file: explicitPatchUrl,
-        name: "PRIDE Never Die",
-        inputCrc32: 0xF620835D, 
-        outputName: "PRIDE Never Die.z64"
-    };
+  <script>
+    'use strict';
+    (function () {
+      const PATCH_URL = 'https://raw.githubusercontent.com/mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta';
+      const EXPECTED_CRC32 = 0xF620835D;
+      const status = document.getElementById('app-status');
+      let patchObjectUrl = null;
+      function show(message, kind) {
+        status.textContent = message;
+        status.dataset.kind = kind || 'loading';
+      }
+      window.addEventListener('pagehide', function () {
+        if (patchObjectUrl) URL.revokeObjectURL(patchObjectUrl);
+      });
 
-    const patcherSettings = {
-        language: 'en',
-        requireValidation: true,
-        allowDropFiles: true
-    };
+      window.addEventListener('load', async function () {
+        try {
+          if (typeof RomPatcherWeb === 'undefined' || typeof RomPatcherWeb.initialize !== 'function') {
+            throw new Error('RomPatcher.js did not load. Ensure the complete rom-patcher-js/ directory exists beside index.html, including its modules and web workers.');
+          }
+          show('Downloading pride.xdelta from GitHub…');
+          const response = await fetch(PATCH_URL, { cache: 'no-store', mode: 'cors' });
+          if (!response.ok) {
+            throw new Error('GitHub returned HTTP ' + response.status + ' for pride.xdelta. Check that the repository and patch file are public.');
+          }
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          if (bytes.length < 5 || bytes[0] !== 0xd6 || bytes[1] !== 0xc3 || bytes[2] !== 0xc4) {
+            throw new Error('GitHub did not return a valid xdelta/VCDIFF binary. Do not use the github.com/.../blob/... viewing URL.');
+          }
+          // VCDIFF byte 4 is the header indicator; bit 0 signals a secondary compressor.
+          if (bytes[4] & 0x01) {
+            throw new Error('This xdelta uses secondary compression, which RomPatcher.js cannot decode. Regenerate with xdelta3 -e -S none, then replace pride.xdelta.');
+          }
+          // After binary verification, let RomPatcher.js fetch a same-origin blob URL.
+          // This avoids relying on the patcher's internal fetch error handling and ensures
+          // users can never accidentally patch with a GitHub HTML error page.
+          patchObjectUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
+          show('Valid xdelta downloaded (' + (bytes.length / 1048576).toFixed(2) + ' MiB). Loading patcher…');
 
-    // Initialize both version configuration styles simultaneously to support all versions
-    var RomPatcherWebWidgetConfig = {
-        allowDynamicPatches: false,
-        hidePatchInput: true,
-        patches: [patchDetails]
-    };
-
-    window.addEventListener('load', function() {
-        if (typeof RomPatcherWeb !== 'undefined') {
-            RomPatcherWeb.initialize(patcherSettings, patchDetails);
-        }
-    });
-
-    // Handle standard interactive feedback events cleanly
-    const fileInput = document.getElementById('input-file-rom');
-    const statusText = document.getElementById('status-text');
-
-    if (fileInput) {
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                statusText.textContent = "Validating ROM CRC and applying PRIDE Never Die mod...";
-                statusText.style.color = "#007aff";
+          RomPatcherWeb.initialize({
+            language: 'en',
+            requireValidation: true,
+            allowDropFiles: true,
+            fixChecksum: false,
+            outputSuffix: false,
+            onloadpatch: function () {
+              show('Patch loaded. Choose your clean .z64 ROM, then click Apply patch & download .z64.', 'ok');
+            },
+            onvalidaterom: function (romFile, valid) {
+              if (valid) {
+                show('Base ROM checksum matches. Ready to apply PRIDE Never Die.', 'ok');
+              } else {
+                show('Wrong base ROM or revision. Expected CRC32 F620835D. Patching is disabled.', 'error');
+              }
+            },
+            onpatch: function () {
+              show('PRIDE Never Die was applied. Your browser is preparing the patched .z64 download.', 'ok');
             }
-        });
-    }
-</script>
-
+          }, {
+            file: patchObjectUrl,
+            name: 'PRIDE Never Die (latest)',
+            description: 'PRIDE Never Die — current main-branch pride.xdelta from GitHub',
+            inputCrc32: EXPECTED_CRC32,
+            outputName: 'PRIDE_Never_Die',
+            outputExtension: 'z64'
+          });
+        } catch (error) {
+          console.error('PRIDE Never Die patcher initialization failed:', error);
+          show('Patcher unavailable: ' + (error && error.message ? error.message : String(error)), 'error');
+        }
+      });
+    }());
+  </script>
 </body>
 </html>
