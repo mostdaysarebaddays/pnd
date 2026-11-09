@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRIDE Never Die - Online Patcher</title>
     
-    <!-- Required RomPatcher.js Core Web Component Engines -->
-    <link type="text/css" rel="stylesheet" href="./rom-patcher-js/style.css" media="all" />
-    <script type="text/javascript" src="./rom-patcher-js/RomPatcher.webapp.js"></script>
+    <!-- Points directly to your operational webapp assets folder -->
+    <link rel="stylesheet" href="webapp/rompatcher.css" type="text/css">
+    <script type="text/javascript" src="webapp/rompatcher.webworker.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -54,6 +54,27 @@
             margin: 5px 0 0 0;
             padding-left: 20px;
         }
+        .file-input-wrapper {
+            margin: 20px 0;
+        }
+        input[type="file"] {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed #555;
+            color: #fff;
+            cursor: pointer;
+            width: 85%;
+        }
+        input[type="file"]:hover {
+            border-color: #007aff;
+        }
+        #status-text {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #ffcc00;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -71,38 +92,53 @@
         </ul>
     </div>
 
-    <!-- NATIVE CHOSEN INJECTION LOCATION REQUIRED BY LIBRARY CONSTRUCTORS -->
-    <div id="rom-patcher-container"></div>
+    <div class="file-input-wrapper">
+        <!-- Main upload field for the user's N64 file -->
+        <input type="file" id="input-file-rom" accept=".z64,.v64,.n64,.zip" />
+    </div>
+
+    <!-- Hidden native elements structured for RomPatcher's automatic bindings -->
+    <input type="file" id="input-file-patch" style="display:none;" />
+
+    <div id="status-text">Patcher ready. Choose your base ROM.</div>
 </div>
 
 <script type="text/javascript">
-    window.addEventListener('load', function() {
-        const myPatcherSettings = {
-            language: 'en',
-            requireValidation: true,
-            allowDropFiles: true
-        };
+    // 1. Construct the URL securely to avoid text-dropping engine issues
+    const pPrefix = "https://corsproxy.io";
+    const rServer = "https://githubusercontent.com";
+    const tPath = "mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta";
+    const absolutePatchUrl = pPrefix + encodeURIComponent(rServer + tPath);
 
-        // Construct the URL step by step cleanly to bypass character truncation bugs
-        const proxyPrefix = "https://corsproxy.io";
-        const rawServer = "https://raw.githubusercontent.com/";
-        const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
-        const targetAsset = "main/pride.xdelta";
-        
-        const absolutePatchUrl = proxyPrefix + encodeURIComponent(rawServer + targetRepo + targetAsset);
-
-        const patchDetails = {
+    // 2. Set up the exact config structure your version of RomPatcher.js listens for natively
+    var RomPatcherWebWidgetConfig = {
+        allowDynamicPatches: false, 
+        hidePatchInput: true,
+        patches: [{
+            code: "pnd",
+            codeName: "PRIDE Never Die",
+            category: "hack",
+            creator: "rey",
+            creatorName: "rey",
+            outputName: "PRIDE Never Die.z64",
             file: absolutePatchUrl,
-            name: "PRIDE Never Die",
-            inputCrc32: "F620835D", // Verifies target Virtual Pro Wrestling 2 ROM
-            outputName: "PRIDE Never Die.z64" // Auto-formats the file name upon download
-        };
+            inputRom: "Virtual Pro Wrestling 2 - Oudou Keishou (Japan)",
+            inputCrc32: "0xF620835D"
+        }]
+    };
 
-        // Trigger native application initialization into the UI container wrapper
-        if (typeof RomPatcherWeb !== 'undefined') {
-            RomPatcherWeb.initialize(myPatcherSettings, patchDetails);
-        }
-    });
+    // 3. Simple UI Status updates
+    const fileInput = document.getElementById('input-file-rom');
+    const statusText = document.getElementById('status-text');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                statusText.textContent = "Validating ROM CRC and applying PRIDE Never Die mod...";
+                statusText.style.color = "#007aff";
+            }
+        });
+    }
 </script>
 
 </body>
