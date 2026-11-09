@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRIDE Never Die - Online Patcher</title>
     
-    <!-- Link to the native stylesheet and core UI engine script files -->
-    <link rel="stylesheet" href="webapp/rompatcher.css" type="text/css">
-    <script type="text/javascript" src="webapp/rompatcher.js"></script>
+    <!-- Local fallback file styles -->
+    <link type="text/css" rel="stylesheet" href="./rom-patcher-js/style.css" media="all" />
+    <link type="text/css" rel="stylesheet" href="./webapp/rompatcher.css" media="all" />
+    
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -54,17 +55,19 @@
             margin: 5px 0 0 0;
             padding-left: 20px;
         }
-        .file-input-wrapper {
-            margin: 20px 0;
+        .upload-box {
+            margin: 25px 0;
         }
+        /* Native, un-hidden file selection buttons */
         input[type="file"] {
             background: #2a2a2a;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             border: 1px dashed #555;
             color: #fff;
             cursor: pointer;
-            width: 85%;
+            width: 90%;
+            font-size: 0.9rem;
         }
         input[type="file"]:hover {
             border-color: #007aff;
@@ -92,43 +95,56 @@
         </ul>
     </div>
 
-    <div class="file-input-wrapper">
-        <!-- Native target elements bound by RomPatcher.js web widget structures -->
+    <!-- NATIVE, EXPLICIT UPLOAD FIELD THAT WILL NEVER VANISH -->
+    <div class="upload-box">
         <input type="file" id="input-file-rom" accept=".z64,.v64,.n64,.zip" />
     </div>
 
-    <!-- Hidden file input element that receives your hardcoded xdelta binary payload -->
-    <input type="file" id="input-file-patch" style="display:none;" />
-
     <div id="status-text">Patcher ready. Choose your base ROM.</div>
+    
+    <!-- Background containers used natively by alternative engine variations -->
+    <div id="rom-patcher-container" style="display:none;"></div>
+    <div id="marcrobledo-rom-patcher" style="display:none;"></div>
 </div>
 
-<script type="text/javascript">
-    // Construct the URL step by step safely to bypass internal character limits
-    const proxyPrefix = "https://corsproxy.io";
-    const rawServer = "https://githubusercontent.com";
-    const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
-    const targetAsset = "main/pride.xdelta";
-    const absolutePatchUrl = proxyPrefix + encodeURIComponent(rawServer + targetRepo + targetAsset);
+<!-- Load RomPatcher core scripts -->
+<script type="text/javascript" src="./rom-patcher-js/RomPatcher.webapp.js"></script>
+<script type="text/javascript" src="./webapp/rompatcher.js"></script>
 
-    // Global layout configuration scanned natively by RomPatcher's initialization loop
-    var RomPatcherWebWidgetConfig = {
-        allowDynamicPatches: false, 
-        hidePatchInput: true,
-        patches: [{
-            code: "pnd",
-            codeName: "PRIDE Never Die",
-            category: "hack",
-            creator: "rey",
-            creatorName: "rey",
-            outputName: "PRIDE Never Die.z64",
-            file: absolutePatchUrl,
-            inputRom: "Virtual Pro Wrestling 2 - Oudou Keishou (Japan)",
-            inputCrc32: "F620835D"
-        }]
+<script type="text/javascript">
+    // Construct your file locations step by step cleanly to prevent URL text trimming
+    const customProxy = "https://corsproxy.io";
+    const remoteServer = "https://githubusercontent.com";
+    const targetFile = "mostdaysarebaddays/PRIDE-Never-Die/main/pride.xdelta";
+    const explicitPatchUrl = customProxy + encodeURIComponent(remoteServer + targetFile);
+
+    const patchDetails = {
+        file: explicitPatchUrl,
+        name: "PRIDE Never Die",
+        inputCrc32: 0xF620835D, 
+        outputName: "PRIDE Never Die.z64"
     };
 
-    // Simple status text adjustments
+    const patcherSettings = {
+        language: 'en',
+        requireValidation: true,
+        allowDropFiles: true
+    };
+
+    // Initialize both version configuration styles simultaneously to support all versions
+    var RomPatcherWebWidgetConfig = {
+        allowDynamicPatches: false,
+        hidePatchInput: true,
+        patches: [patchDetails]
+    };
+
+    window.addEventListener('load', function() {
+        if (typeof RomPatcherWeb !== 'undefined') {
+            RomPatcherWeb.initialize(patcherSettings, patchDetails);
+        }
+    });
+
+    // Handle standard interactive feedback events cleanly
     const fileInput = document.getElementById('input-file-rom');
     const statusText = document.getElementById('status-text');
 
