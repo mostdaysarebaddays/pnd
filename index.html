@@ -60,10 +60,31 @@
             color: #ffcc00;
             font-weight: 500;
         }
-        /* Keep native layout components neat */
-        #marcrobledo-rom-patcher {
+        /* Style the automatically generated form elements nicely */
+        #rom-patcher-container {
+            margin: 20px 0;
+        }
+        #rom-patcher-container input[type="file"] {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed #555;
+            color: #fff;
+            cursor: pointer;
+            width: 85%;
+        }
+        #rom-patcher-container button {
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
             margin-top: 15px;
-            text-align: center;
+        }
+        #rom-patcher-container button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -82,8 +103,8 @@
         </ul>
     </div>
 
-    <!-- NATIVE CORE WRAPPER CONTAINER REQUIRED BY THE REPOSITORY CODE -->
-    <div id="marcrobledo-rom-patcher"></div>
+    <!-- NATIVE TARGET CONTAINER FOR ROMPATCHER ENGINE UI GENERATION -->
+    <div id="rom-patcher-container"></div>
 
     <div id="status-text">Patcher ready. Choose your base ROM.</div>
 </div>
@@ -96,9 +117,9 @@
             allowDropFiles: true
         };
 
-        // Construct the URL piece by piece securely to pass the text dropping bug
+        // Construct the URL step by step safely to bypass character drop limits
         const proxyPrefix = "https://corsproxy.io";
-        const rawServer = "https://raw.githubusercontent.com/";
+        const rawServer = "https://githubusercontent.com";
         const targetRepo = "mostdaysarebaddays/PRIDE-Never-Die/";
         const targetAsset = "main/pride.xdelta";
         
@@ -107,25 +128,16 @@
         const patchDetails = {
             file: absolutePatchUrl,
             name: "PRIDE Never Die",
-            inputCrc32: 0xF620835D, // Checks clean VPW2 checksum
-            outputName: "PRIDE Never Die.z64" // Formats download filename automatically
+            inputCrc32: 0xF620835D, // Enforces the clean Virtual Pro Wrestling 2 check
+            outputName: "PRIDE Never Die.z64" // Automatically handles naming conversion upon download
         };
 
-        // Fire the proper native entry constructor hook built inside the application package
         if (typeof RomPatcherWeb !== 'undefined') {
+            // Fires the initialization process into the target ID element space
             RomPatcherWeb.initialize(myPatcherSettings, patchDetails);
         } else {
             document.getElementById('status-text').textContent = "Error: Patcher script dependencies missing.";
             document.getElementById('status-text').style.color = "#ff3b30";
-        }
-    });
-
-    // Handle interactive validation update statuses cleanly 
-    document.addEventListener("RomPatcherWeb:onFileSelected", () => {
-        const statusText = document.getElementById('status-text');
-        if (statusText) {
-            statusText.textContent = "Validating ROM CRC and applying PRIDE Never Die mod...";
-            statusText.style.color = "#007aff";
         }
     });
 </script>
